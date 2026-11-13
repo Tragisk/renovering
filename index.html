@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#341132">
+<title>Renovering</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏗️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEBE7; --surface:#FFFFFF; --ink:#211B20; --muted:#6B6468; --line:#D6D3CD;
+  --brand:#341132; --brand-ink:#FFFFFF;
+  --warn:#E8A317; --warn-bg:#FCF1D6; --late:#C8382E; --late-bg:#F8DEDB; --ok:#3E7C4F; --ok-bg:#DDEDE1;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#17141A; --surface:#221E25; --ink:#EEEAEC; --muted:#A49CA2; --line:#3A343D;
+    --brand:#C9A3C6; --brand-ink:#1A0F19;
+    --warn:#F0B53D; --warn-bg:#3B2F14; --late:#EF6B5F; --late-bg:#3D1E1C; --ok:#7DC08F; --ok-bg:#1D3324;
+    color-scheme: dark;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.wrap{max-width:680px;margin:0 auto;padding:16px 16px 96px}
+
+/* Header with tape measure */
+header h1{font-stretch:68%;font-weight:800;font-size:2.4rem;line-height:1;margin:8px 0 2px;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted)}
+.tape{margin:18px 0 6px;position:relative;height:34px;border-radius:4px;background:var(--warn);overflow:hidden;
+  background-image:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 10%),repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 2%);
+  background-size:100% 14px,100% 7px;background-repeat:no-repeat;background-position:top left,top left}
+.tape .fill{position:absolute;inset:0 auto 0 0;background:var(--brand);transition:width .6s ease}
+.tape .lbl{position:absolute;right:8px;bottom:4px;font-weight:700;font-size:.85rem;color:#211B20;mix-blend-mode:normal}
+.stats{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:.92rem}
+.stats b{color:var(--ink);font-weight:700}
+
+/* Tabs */
+nav.tabs{display:flex;gap:4px;margin:20px 0 12px;border-bottom:2px solid var(--line)}
+nav.tabs button{background:none;border:0;padding:10px 12px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--brand)}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* Decision list */
+.room{margin:18px 0 6px;font-stretch:80%;font-weight:700;font-size:1.1rem}
+.item{display:grid;grid-template-columns:6px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 12px 12px 0;margin-bottom:6px}
+.item .bar{align-self:stretch;border-radius:0 3px 3px 0;background:var(--line)}
+.item.late .bar{background:var(--late)} .item.soon .bar{background:var(--warn)} .item.done .bar{background:var(--ok)}
+.item .t{font-weight:600}
+.item.done .t{color:var(--muted)}
+.item .m{font-size:.85rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
+.flag{font-size:.78rem;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.flag.late{background:var(--late-bg);color:var(--late)} .flag.soon{background:var(--warn-bg);color:var(--ink)} .flag.done{background:var(--ok-bg);color:var(--ok)}
+.flag.open{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.over{color:var(--late);font-weight:600}
+.empty{padding:28px 8px;text-align:center;color:var(--muted)}
+
+/* Timeline */
+.tl{list-style:none;margin:8px 0 0;padding:0 0 0 22px;border-left:3px solid var(--line);margin-left:8px}
+.tl li{position:relative;margin:0 0 18px}
+.tl li::before{content:"";position:absolute;left:-32px;top:6px;width:15px;height:15px;border-radius:50%;background:var(--bg);border:3px solid var(--brand)}
+.tl li.f::before{background:var(--brand)}
+.tl .ms{background:none;border:0;padding:0;text-align:left;width:100%}
+.tl .d{font-size:.85rem;color:var(--muted)}
+.tl .n{font-weight:700;font-size:1.05rem}
+.tl .sub{font-size:.88rem;color:var(--muted);margin-top:2px}
+.tl .today{font-size:.8rem;font-weight:700;color:var(--late);margin:-6px 0 14px;position:relative}
+.tl .today::before{content:"";position:absolute;left:-30px;top:6px;width:12px;height:3px;background:var(--late)}
+
+/* FAB */
+.fab{position:fixed;right:max(16px,calc(50% - 324px));bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--brand);color:var(--brand-ink);border:0;border-radius:999px;padding:14px 20px;font-weight:700;box-shadow:0 4px 14px rgba(52,17,50,.35)}
+
+/* Sheet */
+dialog{border:0;padding:0;width:min(640px,100%);max-height:92vh;border-radius:14px 14px 0 0;margin:auto auto 0;background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(20,10,20,.45)}
+@media (min-width:700px){dialog{border-radius:14px;margin:auto}}
+.sheet{padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));overflow:auto;max-height:92vh}
+.sheet h2{margin:0 0 12px;font-stretch:75%;font-size:1.5rem}
+label{display:block;font-size:.85rem;font-weight:600;color:var(--muted);margin:12px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+textarea{min-height:70px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--bg);padding:9px 4px;font-size:.9rem}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:600}
+.actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:10px 16px;font-weight:600}
+.btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.btn.danger{color:var(--late);margin-right:auto}
+.offers{margin-top:16px;border-top:1px solid var(--line);padding-top:8px}
+.offers h3{margin:4px 0 8px;font-size:1rem}
+.offer{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.offer .h{font-weight:600}
+.offer .s{font-size:.82rem;color:var(--muted)}
+.offer.chosen .h::after{content:" ✓ valgt";color:var(--ok);font-size:.82rem}
+.mini{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:5px 9px;font-size:.82rem}
+.addoffer{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-top:10px}
+.addoffer input{padding:8px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Renoveringen</h1>
+    <p>254 m² i 2 etager – det vi skal tage stilling til</p>
+    <div class="tape" role="img" id="tape"><div class="fill" id="tapeFill" style="width:0"></div><span class="lbl" id="tapeLbl"></span></div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="b">Beslutninger</button>
+    <button role="tab" aria-selected="false" data-tab="t">Tidslinje</button>
+  </nav>
+
+  <section id="tabB">
+    <div class="filters" id="filters">
+      <button class="chip" data-f="aabne" aria-pressed="true">Mangler</button>
+      <button class="chip" data-f="haster" aria-pressed="false">Haster</button>
+      <button class="chip" data-f="besluttet" aria-pressed="false">Besluttet</button>
+      <button class="chip" data-f="alle" aria-pressed="false">Alle</button>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <section id="tabT" hidden>
+    <ol class="tl" id="timeline"></ol>
+  </section>
+</div>
+
+<button class="fab" id="fab">+ Ny beslutning</button>
+<div class="toast" id="toast"></div>
+<dialog id="dlg"><div class="sheet" id="sheet"></div></dialog>
+
+<script>
+const SB_URL = "https://jmkicrzqmzbetzzjoqtd.supabase.co/rest/v1/";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impta2ljcnpxbXpiZXR6empvcXRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MzY1NDUsImV4cCI6MjEwODExMjU0NX0.BHSSKBFBVZ0qESq-LFkUccpCFRsbhq50DQi4bxK6jx4";
+const SOON_DAYS = 14;
+
+async function api(path, opts = {}) {
+  const res = await fetch(SB_URL + path, {
+    ...opts,
+    headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json", Prefer: "return=representation", ...(opts.headers || {}) }
+  });
+  if (!res.ok) { const t = await res.text(); toast("Kunne ikke gemme – prøv igen"); throw new Error(t); }
+  return res.status === 204 ? null : res.json();
+}
+
+let state = { b: [], m: [], o: [], filter: "aabne", tab: "b" };
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const kr = n => (n == null || n === "") ? "" : Number(n).toLocaleString("da-DK", { maximumFractionDigits: 0 }) + " kr.";
+const todayStr = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const fmtDate = s => s ? new Date(s + "T12:00:00").toLocaleDateString("da-DK", { day: "numeric", month: "short", year: "numeric" }) : "";
+const daysUntil = s => Math.round((new Date(s + "T12:00:00") - new Date(todayStr() + "T12:00:00")) / 864e5);
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 1800); }
+
+async function load() {
+  const [b, m, o] = await Promise.all([
+    api("renov_beslutninger?select=*&order=created_at"),
+    api("renov_milepaele?select=*&order=dato.asc.nullslast,sortering"),
+    api("renov_tilbud?select=*&order=created_at")
+  ]);
+  state.b = b; state.m = m; state.o = o;
+  render();
+}
+
+// Effective deadline: own deadline, or linked milestone date
+function deadlineOf(x) {
+  if (x.deadline) return { date: x.deadline, src: "egen" };
+  const ms = state.m.find(m => m.id === x.milepael_id);
+  if (ms && ms.dato) return { date: ms.dato, src: ms.titel };
+  return null;
+}
+function urgency(x) {
+  if (x.status === "besluttet") return "done";
+  const d = deadlineOf(x); if (!d) return "open";
+  const n = daysUntil(d.date);
+  return n < 0 ? "late" : n <= SOON_DAYS ? "soon" : "open";
+}
+const offersOf = id => state.o.filter(o => o.beslutning_id === id);
+function costOf(x) {
+  const off = offersOf(x.id).filter(o => o.beloeb != null);
+  const chosen = off.find(o => o.valgt);
+  if (chosen) return { v: Number(chosen.beloeb), kind: "valgt" };
+  if (off.length) return { v: Math.min(...off.map(o => Number(o.beloeb))), kind: "laveste" };
+  return null;
+}
+
+function render() {
+  const total = state.b.length, done = state.b.filter(x => x.status === "besluttet").length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  $("#tapeFill").style.width = pct + "%";
+  $("#tapeLbl").textContent = `${done} af ${total} besluttet`;
+  $("#tape").setAttribute("aria-label", `${done} af ${total} beslutninger er truffet`);
+  const late = state.b.filter(x => urgency(x) === "late").length, soon = state.b.filter(x => urgency(x) === "soon").length;
+  const budget = state.b.reduce((s, x) => s + (Number(x.budget) || 0), 0);
+  const chosen = state.o.filter(o => o.valgt && o.beloeb != null).reduce((s, o) => s + Number(o.beloeb), 0);
+  $("#stats").innerHTML = [
+    late ? `<span><b class="over">${late}</b> over deadline</span>` : "",
+    soon ? `<span><b>${soon}</b> haster</span>` : "",
+    `<span>Budget <b>${kr(budget) || "0 kr."}</b></span>`,
+    chosen ? `<span>Valgte tilbud <b class="${chosen > budget ? "over" : ""}">${kr(chosen)}</b></span>` : ""
+  ].join("");
+  renderList(); renderTimeline();
+}
+
+function renderList() {
+  let items = state.b.slice();
+  const f = state.filter;
+  if (f === "aabne") items = items.filter(x => x.status !== "besluttet");
+  if (f === "haster") items = items.filter(x => ["late", "soon"].includes(urgency(x)));
+  if (f === "besluttet") items = items.filter(x => x.status === "besluttet");
+  if (!items.length) {
+    $("#list").innerHTML = `<div class="empty">${f === "haster" ? "Intet haster lige nu." : f === "besluttet" ? "Ingen beslutninger er truffet endnu." : "Alt er besluttet. Tryk + for at tilføje noget nyt."}</div>`;
+    return;
+  }
+  const rank = { late: 0, soon: 1, open: 2, done: 3 };
+  const rooms = [...new Set(items.map(x => x.rum))];
+  $("#list").innerHTML = rooms.map(r => {
+    const rows = items.filter(x => x.rum === r).sort((a, b) => rank[urgency(a)] - rank[urgency(b)]);
+    return `<div class="room">${esc(r)}</div>` + rows.map(x => {
+      const u = urgency(x), d = deadlineOf(x), c = costOf(x), n = offersOf(x.id).length;
+      const flag = u === "late" ? `<span class="flag late">${-daysUntil(d.date)} dage over</span>`
+        : u === "soon" ? `<span class="flag soon">${daysUntil(d.date) === 0 ? "I dag" : daysUntil(d.date) + " dage"}</span>`
+        : u === "done" ? `<span class="flag done">Besluttet</span>`
+        : x.status === "undersoeger" ? `<span class="flag open">Undersøger</span>` : "";
+      const meta = [
+        d && u !== "done" ? `<span>Senest ${fmtDate(d.date)}${d.src !== "egen" ? " (" + esc(d.src) + ")" : ""}</span>` : "",
+        x.budget != null ? `<span>Budget ${kr(x.budget)}</span>` : "",
+        c ? `<span class="${x.budget != null && c.v > Number(x.budget) ? "over" : ""}">${c.kind === "valgt" ? "Valgt" : "Laveste"} ${kr(c.v)}</span>` : "",
+        n ? `<span>${n} tilbud</span>` : "",
+        u === "done" && x.beslutning ? `<span>${esc(x.beslutning)}</span>` : ""
+      ].join("");
+      return `<button class="item ${u}" data-id="${x.id}"><span class="bar"></span><span><div class="t">${esc(x.titel)}</div><div class="m">${meta}</div></span>${flag}</button>`;
+    }).join("");
+  }).join("");
+}
+
+function renderTimeline() {
+  const t = todayStr(); let todayShown = false;
+  const html = state.m.map(m => {
+    let pre = "";
+    if (!todayShown && m.dato && m.dato > t) { pre = `<div class="today">I dag</div>`; todayShown = true; }
+    const linked = state.b.filter(x => x.milepael_id === m.id), open = linked.filter(x => x.status !== "besluttet");
+    const when = m.dato ? fmtDate(m.dato) + (m.dato_note ? " – " + esc(m.dato_note) : "") : (m.dato_note ? esc(m.dato_note) : "Dato uklar");
+    const sub = linked.length ? (open.length ? `${open.length} af ${linked.length} beslutninger mangler` : `Alle ${linked.length} beslutninger på plads`) : "";
+    return `${pre}<li class="${m.faerdig ? "f" : ""}"><button class="ms" data-mid="${m.id}"><div class="d">${when}</div><div class="n">${esc(m.titel)}${m.faerdig ? " ✓" : ""}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</button></li>`;
+  }).join("");
+  $("#timeline").innerHTML = html || `<li class="empty">Ingen milepæle endnu. Tryk + for at tilføje.</li>`;
+}
+
+// ---------- Decision sheet ----------
+function openDecision(id) {
+  const x = id ? state.b.find(b => b.id === id) : { rum: "", titel: "", status: "aaben" };
+  const rooms = [...new Set(state.b.map(b => b.rum))];
+  const msOpts = `<option value="">Ingen</option>` + state.m.map(m => `<option value="${m.id}" ${m.id === x.milepael_id ? "selected" : ""}>${esc(m.titel)}${m.dato ? " (" + fmtDate(m.dato) + ")" : ""}</option>`).join("");
+  $("#sheet").innerHTML = `
+    <h2>${id ? "Rediger beslutning" : "Ny beslutning"}</h2>
+    <div class="row">
+      <div><label for="fRum">Rum / område</label><input id="fRum" list="rooms" value="${esc(x.rum)}" required><datalist id="rooms">${rooms.map(r => `<option value="${esc(r)}">`).join("")}</datalist></div>
+      <div><label for="fBudget">Budget (kr.)</label><input id="fBudget" type="number" inputmode="numeric" value="${x.budget ?? ""}"></div>
+    </div>
+    <label for="fTitel">Hvad skal besluttes?</label><input id="fTitel" value="${esc(x.titel)}" required>
+    <label>Status</label>
+    <div class="seg" id="fStatus">
+      ${[["aaben", "Ikke startet"], ["undersoeger", "Undersøger"], ["besluttet", "Besluttet"]].map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${x.status === v}">${l}</button>`).join("")}
+    </div>
+    <label for="fBeslutning">Hvad blev besluttet?</label><input id="fBeslutning" value="${esc(x.beslutning)}" placeholder="Udfyldes når det er besluttet">
+    <div class="row">
+      <div><label for="fDeadline">Skal besluttes senest</label><input id="fDeadline" type="date" value="${x.deadline ?? ""}"></div>
+      <div><label for="fMs">Før milepæl</label><select id="fMs">${msOpts}</select></div>
+    </div>
+    <label for="fNoter">Noter</label><textarea id="fNoter">${esc(x.noter)}</textarea>
+    ${id ? `<div class="offers"><h3>Tilbud</h3><div id="offerList"></div>
+      <div class="addoffer"><input id="oH" placeholder="Håndværker"><input id="oB" type="number" inputmode="numeric" placeholder="Beløb (kr.)">
+      <input id="oD" type="date" aria-label="Dato for tilbud"><input id="oN" placeholder="Note (valgfri)"></div>
+      <div class="actions" style="margin-top:8px"><button class="btn" id="oAdd">Tilføj tilbud</button></div></div>` : ""}
+    <div class="actions">
+      ${id ? `<button class="btn danger" id="del">Slet</button>` : ""}
+      <button class="btn" id="cancel">Luk</button>
+      <button class="btn primary" id="save">Gem</button>
+    </div>`;
+  $("#fStatus").onclick = e => { const b = e.target.closest("button"); if (!b) return; [...$("#fStatus").children].forEach(c => c.setAttribute("aria-pressed", c === b)); };
+  $("#cancel").onclick = () => $("#dlg").close();
+  $("#save").onclick = async () => {
+    const rum = $("#fRum").value.trim(), titel = $("#fTitel").value.trim();
+    if (!rum || !titel) { toast("Udfyld rum og hvad der skal besluttes"); return; }
+    const body = {
+      rum, titel,
+      status: $("#fStatus [aria-pressed=true]").dataset.v,
+      beslutning: $("#fBeslutning").value.trim() || null,
+      deadline: $("#fDeadline").value || null,
+      milepael_id: $("#fMs").value || null,
+      budget: $("#fBudget").value === "" ? null : Number($("#fBudget").value),
+      noter: $("#fNoter").value.trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    if (id) await api("renov_beslutninger?id=eq." + id, { method: "PATCH", body: JSON.stringify(body) });
+    else await api("renov_beslutninger", { method: "POST", body: JSON.stringify(body) });
+    $("#dlg").close(); toast("Gemt"); load();
+  };
+  if (id) {
+    $("#del").onclick = async () => {
+      if (!confirm("Slet beslutningen og dens tilbud? Det kan ikke fortrydes.")) return;
+      await api("renov_beslutninger?id=eq." + id, { method: "DELETE" });
+      $("#dlg").close(); toast("Slettet"); load();
+    };
+    renderOffers(id);
+    $("#oAdd").onclick = async () => {
+      const h = $("#oH").value.trim(); if (!h) { toast("Skriv håndværkerens navn"); return; }
+      await api("renov_tilbud", { method: "POST", body: JSON.stringify({ beslutning_id: id, haandvaerker: h, beloeb: $("#oB").value === "" ? null : Number($("#oB").value), dato: $("#oD").value || null, note: $("#oN").value.trim() || null }) });
+      ["#oH", "#oB", "#oD", "#oN"].forEach(s => $(s).value = "");
+      await load(); renderOffers(id); toast("Tilbud tilføjet");
+    };
+  }
+  $("#dlg").showModal();
+}
+
+function renderOffers(id) {
+  const list = offersOf(id);
+  $("#offerList").innerHTML = list.length ? list.map(o => `
+    <div class="offer ${o.valgt ? "chosen" : ""}">
+      <div><div class="h">${esc(o.haandvaerker)}</div><div class="s">${[kr(o.beloeb), fmtDate(o.dato), esc(o.note)].filter(Boolean).join(" · ")}</div></div>
+      <button class="mini" data-pick="${o.id}">${o.valgt ? "Fravælg" : "Vælg"}</button>
+      <button class="mini" data-delo="${o.id}" aria-label="Slet tilbud">✕</button>
+    </div>`).join("") : `<div class="s" style="color:var(--muted)">Ingen tilbud endnu.</div>`;
+  $("#offerList").onclick = async e => {
+    const pick = e.target.dataset.pick, delo = e.target.dataset.delo;
+    if (pick) {
+      const o = state.o.find(x => x.id === pick), newVal = !o.valgt;
+      if (newVal) await api("renov_tilbud?beslutning_id=eq." + id, { method: "PATCH", body: JSON.stringify({ valgt: false }) });
+      await api("renov_tilbud?id=eq." + pick, { method: "PATCH", body: JSON.stringify({ valgt: newVal }) });
+    }
+    if (delo) { if (!confirm("Slet tilbuddet?")) return; await api("renov_tilbud?id=eq." + delo, { method: "DELETE" }); }
+    if (pick || delo) { await load(); renderOffers(id); }
+  };
+}
+
+// ---------- Milestone sheet ----------
+function openMilestone(id) {
+  const m = id ? state.m.find(x => x.id === id) : { titel: "", faerdig: false };
+  const linked = id ? state.b.filter(x => x.milepael_id === id) : [];
+  $("#sheet").innerHTML = `
+    <h2>${id ? "Rediger milepæl" : "Ny milepæl"}</h2>
+    <label for="mT">Milepæl</label><input id="mT" value="${esc(m.titel)}" placeholder="Fx Køkken monteres">
+    <div class="row">
+      <div><label for="mD">Dato (hvis kendt)</label><input id="mD" type="date" value="${m.dato ?? ""}"></div>
+      <div><label for="mN">Note om dato</label><input id="mN" value="${esc(m.dato_note)}" placeholder="Fx måske februar"></div>
+    </div>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:1rem"><input id="mF" type="checkbox" style="width:auto" ${m.faerdig ? "checked" : ""}> Milepælen er nået</label>
+    ${linked.length ? `<label>Beslutninger før denne milepæl</label><div>${linked.map(x => `<div class="s" style="padding:3px 0">${x.status === "besluttet" ? "✓" : "○"} ${esc(x.rum)}: ${esc(x.titel)}</div>`).join("")}</div>` : ""}
+    <div class="actions">
+      ${id ? `<button class="btn danger" id="del">Slet</button>` : ""}
+      <button class="btn" id="cancel">Luk</button>
+      <button class="btn primary" id="save">Gem</button>
+    </div>`;
+  $("#cancel").onclick = () => $("#dlg").close();
+  $("#save").onclick = async () => {
+    const titel = $("#mT").value.trim(); if (!titel) { toast("Giv milepælen et navn"); return; }
+    const body = { titel, dato: $("#mD").value || null, dato_note: $("#mN").value.trim() || null, faerdig: $("#mF").checked };
+    if (id) await api("renov_milepaele?id=eq." + id, { method: "PATCH", body: JSON.stringify(body) });
+    else await api("renov_milepaele", { method: "POST", body: JSON.stringify({ ...body, sortering: state.m.length + 1 }) });
+    $("#dlg").close(); toast("Gemt"); load();
+  };
+  if (id) $("#del").onclick = async () => {
+    if (!confirm("Slet milepælen? Beslutninger knyttet til den bliver ikke slettet.")) return;
+    await api("renov_milepaele?id=eq." + id, { method: "DELETE" });
+    $("#dlg").close(); toast("Slettet"); load();
+  };
+  $("#dlg").showModal();
+}
+
+// ---------- Events ----------
+$("#list").onclick = e => { const b = e.target.closest(".item"); if (b) openDecision(b.dataset.id); };
+$("#timeline").onclick = e => { const b = e.target.closest(".ms"); if (b) openMilestone(b.dataset.mid); };
+$("#filters").onclick = e => { const c = e.target.closest(".chip"); if (!c) return; state.filter = c.dataset.f; [...$("#filters").children].forEach(x => x.setAttribute("aria-pressed", x === c)); renderList(); };
+document.querySelector(".tabs").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.tab = b.dataset.tab;
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+  $("#tabB").hidden = state.tab !== "b"; $("#tabT").hidden = state.tab !== "t";
+  $("#fab").textContent = state.tab === "b" ? "+ Ny beslutning" : "+ Ny milepæl";
+};
+$("#fab").onclick = () => state.tab === "b" ? openDecision(null) : openMilestone(null);
+$("#dlg").addEventListener("click", e => { if (e.target === $("#dlg")) $("#dlg").close(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("#dlg").open) load(); });
+load().catch(() => { $("#list").innerHTML = `<div class="empty">Kunne ikke hente data. Tjek forbindelsen og genindlæs siden.</div>`; });
+</script>
+</body>
+</html>
